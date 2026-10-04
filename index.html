@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학과 사무실 문의하기</title>
+<style>
+:root {
+--primary-blue: #1a73e8;
+--hover-blue: #1557b0;
+--bg-light: #f0f4f8;
+--text-main: #202124;
+--text-sub: #5f6368;
+--border-color: #dadce0;
+}
+
+    body { 
+        font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; 
+        background-color: var(--bg-light); 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        min-height: 100vh; 
+        margin: 0; 
+        padding: 20px;
+    }
+
+    .inquiry-card { 
+        background: #ffffff; 
+        width: 100%; 
+        max-width: 480px; 
+        border-radius: 16px; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+        overflow: hidden; 
+    }
+
+    .card-header {
+        background-color: var(--primary-blue);
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+    }
+
+    .card-header h2 { margin: 0 0 10px 0; font-size: 22px; font-weight: 600; }
+    .card-header p { margin: 0; font-size: 14px; opacity: 0.9; }
+
+    .card-body { padding: 30px; }
+
+    .type-toggle {
+        display: flex;
+        background-color: #f1f3f4;
+        border-radius: 8px;
+        padding: 4px;
+        margin-bottom: 25px;
+    }
+
+    .type-toggle input[type="radio"] { display: none; }
+    
+    .type-toggle label {
+        flex: 1;
+        text-align: center;
+        padding: 10px 0;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-sub);
+        transition: all 0.3s ease;
+    }
+
+    .type-toggle input[type="radio"]:checked + label {
+        background-color: #ffffff;
+        color: var(--primary-blue);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        font-weight: 600;
+    }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { 
+        display: block; 
+        margin-bottom: 8px; 
+        font-size: 13px; 
+        font-weight: 600; 
+        color: var(--text-sub); 
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--text-main);
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+        background-color: #fafafa;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+    }
+    
+    textarea.form-control { resize: vertical; min-height: 120px; }
+
+    .submit-btn {
+        width: 100%;
+        padding: 14px;
+        background-color: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        margin-top: 10px;
+    }
+
+    .submit-btn:hover { background-color: var(--hover-blue); }
+    .submit-btn:active { transform: scale(0.98); }
+
+    .real-name-only { 
+        display: none; 
+        animation: fadeIn 0.3s ease-in-out; 
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+</head>
+<body>
+
+<div class="inquiry-card">
+<div class="card-header">
+<h2>학과 사무실 문의하기</h2>
+<p>궁금한 점을 남겨주시면 신속하게 확인하겠습니다.</p>
+</div>
+
+<div class="card-body">
+    <div class="type-toggle">
+        <input type="radio" id="typeAnon" name="inquiryType" value="anonymous" checked>
+        <label for="typeAnon">익명 문의</label>
+        
+        <input type="radio" id="typeReal" name="inquiryType" value="realname">
+        <label for="typeReal">실명 문의</label>
+    </div>
+
+    <form id="inquiryForm">
+        <div id="realNameGroup" class="real-name-only">
+            <div class="form-group">
+                <label for="studentName">이름</label>
+                <input type="text" id="studentName" class="form-control" placeholder="홍길동">
+            </div>
+            
+            <div class="form-group">
+                <label for="studentId">학번</label>
+                <input type="text" id="studentId" class="form-control" placeholder="20261234">
+            </div>
+
+            <div class="form-group">
+                <label for="email">답변 받을 이메일</label>
+                <input type="email" id="email" class="form-control" placeholder="example@woosong.org">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="content">문의 내용</label>
+            <textarea id="content" class="form-control" placeholder="어떤 점이 궁금하신가요? 상세히 적어주세요." required></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">문의 접수하기</button>
+    </form>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCEinqLq1X1QbAgh6wm2Lh4m6wvv1SENQY",
+  authDomain: "woosongqa.firebaseapp.com",
+  databaseURL: "[https://woosongqa-default-rtdb.asia-southeast1.firebasedatabase.app](https://woosongqa-default-rtdb.asia-southeast1.firebasedatabase.app)",
+  projectId: "woosongqa",
+  storageBucket: "woosongqa.firebasestorage.app", 
+  messagingSenderId: "124162733872",
+  appId: "1:124162733872:web:ba9407d4464a0c3fe1baf5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const radioButtons = document.querySelectorAll('input[name="inquiryType"]');
+const realNameGroup = document.getElementById('realNameGroup');
+const inputs = realNameGroup.querySelectorAll('input');
+
+radioButtons.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        if (e.target.value === 'realname') {
+            realNameGroup.style.display = 'block';
+            inputs.forEach(input => input.required = true); 
+        } else {
+            realNameGroup.style.display = 'none';
+            inputs.forEach(input => {
+                input.required = false; 
+                input.value = ''; 
+            });
+        }
+    });
+});
+
+document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitBtn = document.querySelector('.submit-btn');
+    submitBtn.innerText = '접수 중...';
+    submitBtn.disabled = true;
+
+    const isRealName = document.querySelector('input[name="inquiryType"]:checked').value === 'realname';
+    
+    let inquiryData = {
+        type: isRealName ? '실명' : '익명',
+        content: document.getElementById('content').value,
+        createdAt: serverTimestamp(),
+        status: '대기중' 
+    };
+
+    if (isRealName) {
+        inquiryData.name = document.getElementById('studentName').value;
+        inquiryData.studentId = document.getElementById('studentId').value;
+        inquiryData.email = document.getElementById('email').value;
+    }
+
+    try {
+        await addDoc(collection(db, "inquiries"), inquiryData);
+        alert('성공적으로 문의가 접수되었습니다.');
+        
+        document.getElementById('inquiryForm').reset();
+        document.getElementById('typeAnon').click(); 
+    } catch (error) {
+        console.error("Error adding document: ", error);
+        alert('접수 중 문제가 발생했습니다. 관리자에게 문의하세요.');
+    } finally {
+        submitBtn.innerText = '문의 접수하기';
+        submitBtn.disabled = false;
+    }
+});
+</script>
+</body>
+</html>
